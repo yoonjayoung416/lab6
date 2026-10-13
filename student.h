@@ -1,36 +1,24 @@
-
-// 2. 클래스명.h: 클래스 정의
-// 1의 본인이름학번의 네임스페이스 안에 클래스를 정의하고 멤버함수들도 모두 인라인으로 구현합니다. 
-// private 멤버변수 선언 (2개 이상): id(7digit), score(0~100), grade('A'~'F')
-// private 멤버함수 정의
-// -test멤버변수1: 멤버변수1 범위가 아니면 프로그램 종료
-// -test멤버변수2: 멤버변수2 범위가 아니면 프로그램 종료
-// public 멤버함수 정의
-// -input: 표준스트림입력으로 멤버변수들 입력, test함수들 호출
-// -set 접근함수들: 멤버변수 값 설정 및 test함수 호출
-// -print: 표준스트림출력으로 멤버변수들 출력
-// -get 접근함수들: 멤버변수 값 리턴
-
-#pragma once //헤더파일에는 header guard가 있어야 함
+#pragma once 
 #include <iostream>
-
+#include <string>
 namespace yjy2372032 
 {
-    class student //class 정의
+    class student 
     {
     //private:
+        std::string name{}; //string 멤버변수 추가
         int id{};
         int score{};
-        char grade{}; //아스키테이블로 182
-    // private 멤버함수 정의 id(7digit), score(0~100), grade('A'~'F')
-        void testId(){//id (1000000 ~ 9999999): 7 digits
+        char grade{}; 
+    
+        void testId(){
             if (id < 1000000 || id> 9999999)
             {
                 std::cout << "Invalid ID\n";
-                std::exit(1); //중괄호 없으면 프로그램 매번 종료됨
+                std::exit(1); 
             }
         }
-        void testScore(){ //score (0~100)
+        void testScore(){ 
             if (score < 0 || score > 100)
             {
                 std::cout<< "Invalid score\n";
@@ -45,13 +33,16 @@ namespace yjy2372032
                 std::exit(1);
             }
         }
-        public://생성자
-            student(int d = 1234567, int s = 0, char g = 'F')
-            :id{d},score{s},grade{g}
+        public://생성자 name추가/ const랑 reference는 함께 쓰임
+            student(const std::string& n = "no name yet", int d = 1234567, int s = 0, char g = 'F')
+            :name{n},id{d},score{s},grade{g}
             {
                 testId(); testScore(); testGrade();
             }
             void input(){
+                std::cout << "Enter name: ";
+                //input함수 추가: std::string형 멤버변수는 std::string의 getline함수와 입력조작기 std::ws를 사용
+                std::getline(std::cin >> std::ws, name); //name이 string일때 쓸 수 있는 ws는 공백 tap줄바꿈 없이 name에 값 넣어줌
                 std::cout << "Enter id:";
                 std::cin >> id; testId();
                 std::cout << "Enter score:";
@@ -59,14 +50,63 @@ namespace yjy2372032
                 std::cout << "Enter grade:";
                 std::cin >> grade; testGrade();
             }
+          
+            friend std::istream& operator>>(std::istream& is, student& s) //reference안 적어주면 값이 저장되지 않음
+            {
+                //입력연산자에 name추가
+                std::cout << "Enter name: ";
+                std::getline(is >> std::ws, s.name);
+                std::cout<< " Enter id: ";
+                is >> s.id; s.testId();
+                std::cout<< " Enter score: ";
+                is >> s.score; s.testScore();
+                std::cout<< " Enter grade: ";
+                is >> s.grade; s.testGrade();
+                return is;
+            }
+            //접근함수 name 추가
+            void setName(const std::string& n){name = n;} //여기서는 const &써도 되고 안 써도 됨
             void setId(int d){id = d; testId();}
             void setScore(int s){score = s; testScore();}
             void setGrade(char g){grade = g; testGrade();}
+            void print() const  
+            {
+                 std::cout << name << " (" <<id << "):" << score << " (" << grade << ")\n";
+            }
+            
+         
+            friend std::ostream& operator<<(std::ostream& os, const student& s)
+            {
+                //출력연산자에 name추가
+                os << s.name << "," << s.id << "," << s.score << "," << s.grade <<"\n";
+                return os;
+
+            }
             //const멤버함수
-            void print() const { std::cout << id << "," <<score << "," << grade <<"\n";}
+            const std::string& getName() const {return name;}
             int getId() const {return id;}
             int getScore() const {return score;}
             char getGrade() const {return grade;}
+            student operator++()//후위증가연산자에 name추가
+            {
+                return student{name, id, ++score, grade};
+            }
+       
+            student operator++(int) //후위증가연산자에 name추가
+            {
+                student temp{name, id, score, grade};
+                score++;
+                return temp;
+                
+            } 
+            friend bool operator==(const student& s1, const student& s2)
+            {
+                return s1.id == s2.id;
+            }
+            friend int operator+(const student& s1, const student& s2)
+            {
+                return s1.score + s2.score; 
+            }
 
     };
 }
